@@ -17,3 +17,4 @@ function Set-PLstaticIP{
     }
 
     }
+    Export-ModuleMember -Function New-PLstaticIP
