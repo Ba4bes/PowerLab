@@ -1,5 +1,5 @@
 # WIP
-function New-Server{
+function New-PLServerinDomain {
     New-PLVM -VmName $VmName -VmPath $VmPath -ParentDisk $ParentDisk -switchname $switchname -switchgeneration $switchgeneration -verbose
 Set-PLstaticIP -VmName $VmName -NewIpAddress $NewIpAddress -NewSubnetMask $NewSubnetMask -NewGateway $NewGateway -dnsserver $dnsserver -verbose
 Set-PLComputername -VmName $VmName -newcomputername $VmName -verbose

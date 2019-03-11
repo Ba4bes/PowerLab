@@ -1,5 +1,6 @@
 
 function New-PLVM {
+    [cmdletbinding()]
     param(
         [string]$VMName,
         [string]$VMPath,
@@ -12,17 +13,19 @@ function New-PLVM {
     if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         Throw "This function needs to be run as administrator"
     }
-    Try {
-        Test-Path $ParentDiskPath
-    }
-    Catch {
-        Throw "$ParentDiskPath does not excist" 
+
+    Get-HyperVModule
+
+     if ((Test-Path $ParentDiskPath) -eq $false){
+        Throw "$ParentDiskPath does not exist"
     }
     $Path = "$VMPath\$VMName"
     #creates a dynamic vhdx
     try{
     $VHDPath = "$Path\$VMName-Disk0.vhdx"
-    New-VHD -Differencing -ParentPath $ParentDiskpath -Path $VHDPath
+    $VHD = New-VHD -Differencing -ParentPath $ParentDiskpath -Path $VHDPath
+    Write-Output "VHD has been created"
+    Write-Verbose $VHD
     }
     Catch {
         Throw "The VHD could not be created."
@@ -30,7 +33,9 @@ function New-PLVM {
 
     #creates a new VM
     try {
-    New-VM -VHDPath $VHDPath -Name $VMName -Path $path -SwitchName $SwitchName -Generation $SwitchGeneration
+    $VM = New-VM -VHDPath $VHDPath -Name $VMName -Path $path -SwitchName $SwitchName -Generation $SwitchGeneration
+    Write-Output "$VMName has been created"
+    Write-Verbose $VM
     }
     Catch {
         Throw "The VM could not be created"
@@ -41,15 +46,12 @@ function New-PLVM {
     #Extra settings
 
     #Disable automatic Checkpoints
-    if ($AutoCheckPointDisabled){
+    if ($False -ne $AutoCheckPointDisabled){
     Set-VM -VMName $VMName -AutomaticCheckpointsEnabled $false
     }
 
     Start-VM -VMName $VMName
-    
-    #Enable services to enable powershell direct
+   #Enable services to enable powershell direct
     Enable-VMIntegrationService -Name "Guest Service Interface" -VMName $VMName
-}
 
-#Set-VMMemory $VMName -DynamicMemoryEnabled $true -MinimumBytes 256MB -StartupBytes 2GB -MaximumBytes 2GB
-Export-ModuleMember -Function New-PLVM
+}

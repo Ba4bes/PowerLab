@@ -1,37 +1,36 @@
 # WIP
 Function Install-PLDC {
+    [cmdletbinding()]
     param (
+        [Parameter()]
         [string]$VmName,
+        [Parameter()]
         [string]$domainname,
+        [Parameter()]
         [switch]$firstdc,
+        [Parameter()]
+        [ValidateNotNullorEmpty()]
         [PSCredential]$DomainCredential,
-        [pscredential]$LocalCredential
+        [Parameter()]
+        [ValidateNotNullorEmpty()]
+        [PSCredential]$LocalCredential
     )
 
-    if ($null -eq $DomainCredential){
-        $DomainCredential = Get-Credential -Message "Please provide DomainCredentials"
-    }
-    if ($null -eq $LocalCredential){
-        $LocalCredential = Get-Credential -Message "Please provide local admin credentials"
-    } 
-      
     $netbios = $domainname.split(".")[0]
-    # $domainend = $domainname.Split(".")[1]
-
-    Invoke-Command -VMName $vmname -Credential $DomainCredential {
+    Invoke-Command -VMName $VMName -Credential $LocalCredential {
         Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
         Import-Module ADDSDeployment
         $SafeModePassword = (ConvertTo-SecureString 'Welkom123' -AsPlainText -Force)
         $Parameters = @{
-            CreateDnsDelegation           = $false #CreateDnsDelegation:$false 
-            DatabasePath                  = "C:\Windows\NTDS" 
-            DomainMode                    = "WinThreshold" 
-            DomainName                    = $using:domainname 
-            InstallDns                    = $true  # InstallDns:$true 
-            LogPath                       = "C:\Windows\NTDS" 
-            NoRebootOnCompletion          = $false #NoRebootOnCompletion:$false 
-            SysvolPath                    = "C:\Windows\SYSVOL" 
-            Force                         = $true #Force:$true 
+            CreateDnsDelegation           = $false #CreateDnsDelegation:$false
+            DatabasePath                  = "C:\Windows\NTDS"
+            DomainMode                    = "WinThreshold"
+            DomainName                    = $using:domainname
+            InstallDns                    = $true  # InstallDns:$true
+            LogPath                       = "C:\Windows\NTDS"
+            NoRebootOnCompletion          = $false #NoRebootOnCompletion:$false
+            SysvolPath                    = "C:\Windows\SYSVOL"
+            Force                         = $true #Force:$true
             SafeModeAdministratorPassword = $SafeModePassword
             Confirm                       = $false
         }
@@ -39,18 +38,18 @@ Function Install-PLDC {
         if ($using:firstdc -eq $true) {
             #   Install-ADDSForest `
             #     $Parameters = @{
-            #         CreateDnsDelegation = $false #CreateDnsDelegation:$false 
-            #         DatabasePath = "C:\Windows\NTDS" 
-            #         DomainMode = "WinThreshold" 
-            #         DomainName = $using:domainname 
-            #         DomainNetbiosName = $using:netbios 
-            #         ForestMode = "WinThreshold" 
-            #         InstallDns = $true  # InstallDns:$true 
-            #         LogPath = "C:\Windows\NTDS" 
-            #         NoRebootOnCompletion = $false #NoRebootOnCompletion:$false 
-            #         SysvolPath=  "C:\Windows\SYSVOL" 
-            #         Force = $true #Force:$true 
-            #         SafeModeAdministratorPassword = (ConvertTo-SecureString 'Welkom123' -AsPlainText -Force) ` -confirm:$false `    
+            #         CreateDnsDelegation = $false #CreateDnsDelegation:$false
+            #         DatabasePath = "C:\Windows\NTDS"
+            #         DomainMode = "WinThreshold"
+            #         DomainName = $using:domainname
+            #         DomainNetbiosName = $using:netbios
+            #         ForestMode = "WinThreshold"
+            #         InstallDns = $true  # InstallDns:$true
+            #         LogPath = "C:\Windows\NTDS"
+            #         NoRebootOnCompletion = $false #NoRebootOnCompletion:$false
+            #         SysvolPath=  "C:\Windows\SYSVOL"
+            #         Force = $true #Force:$true
+            #         SafeModeAdministratorPassword = (ConvertTo-SecureString 'Welkom123' -AsPlainText -Force) ` -confirm:$false `
             # }
             $Parameters.Add("DomainNetbiosName" , $using:netbios )
             $Parameters.Add("ForestMode" , "WinThreshold" )
@@ -62,7 +61,7 @@ Function Install-PLDC {
             $parameters.add("Credential" , "$using:DomainCredential" )
             $parameters.add("CriticalReplicationOnly", $false )
             $parameters.add("SiteName" , "Default-First-Site-Name")
-             
+
             #>
             # Install-ADDSDomainController `
             #     -NoGlobalCatalog:$false `
@@ -82,4 +81,8 @@ Function Install-PLDC {
         }
         Install-ADDSForest @Parameters
     }
+    Invoke-Command -VMName $VMName -Credential $LocalCredential {
+    Get-ComputerInfo
+    }
+
 }
