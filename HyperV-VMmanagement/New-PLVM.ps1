@@ -2,19 +2,24 @@
 function New-PLVM {
     [cmdletbinding()]
     param(
+        [Parameter(Mandatory = $true)]
         [string]$VMName,
+        [Parameter(Mandatory = $true)]
         [string]$VMPath,
+        [Parameter(Mandatory = $true)]
         [string]$ParentDiskPath,
+        [Parameter()]
         [string]$SwitchName = "Default Switch",
+        [Parameter()]
         [int]$SwitchGeneration = 2,
-        [switch]$AutoCheckPointDisabled
+        [Parameter()]
+        [switch]$AutoCheckPointEnAbled
     )
+
     #This function will only work with elevated permissions
     if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         Throw "This function needs to be run as administrator"
     }
-
-    Get-HyperVModule
 
      if ((Test-Path $ParentDiskPath) -eq $false){
         Throw "$ParentDiskPath does not exist"
@@ -46,12 +51,12 @@ function New-PLVM {
     #Extra settings
 
     #Disable automatic Checkpoints
-    if ($False -ne $AutoCheckPointDisabled){
+    if ($False -eq $AutoCheckPointEnabled){
     Set-VM -VMName $VMName -AutomaticCheckpointsEnabled $false
     }
 
     Start-VM -VMName $VMName
-   #Enable services to enable powershell direct
+   #Enable services to enable Copy-VMfile
     Enable-VMIntegrationService -Name "Guest Service Interface" -VMName $VMName
 
 }

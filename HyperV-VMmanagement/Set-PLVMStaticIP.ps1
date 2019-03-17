@@ -14,11 +14,14 @@ function Set-PLVMstaticIP {
         [string]$DNSServer,
         [Parameter()]
         [ValidateNotNullorEmpty()]
-        [pscredential]$LocalCredentials
+        [pscredential]$LocalCredential
     )
+    #This function will only work with elevated permissions
+    if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+        Throw "This function needs to be run as administrator"
+    }
 
-$LocalCredentials = Get-Credential -Message "Please provide local admin credentials"
-    Invoke-Command -VMName $vmname -Credential $LocalCredentials {
+    Invoke-Command -VMName $vmname -Credential $LocalCredential {
         try {
             $IpInterface = (Get-NetAdapter).ifIndex
             New-NetIPAddress -InterfaceIndex $IpInterface -IPAddress $using:NewIpAddress -PrefixLength $using:NewSubnetPrefix -DefaultGateway $Using:NewGateway
