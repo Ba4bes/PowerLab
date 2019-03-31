@@ -47,6 +47,8 @@ New-DHCPconfiguration @dhcpparameters -Verbose
 
 ## HyperV-VMmanagement
 
+<https://4bes.nl/2019/03/31/powerlab-quickly-create-servers-in-hyperv-using-powershell-direct/>
+
 ```Powershell
 Install-PLDC -VmName PLDC01 -DomainName "Demo.lab" -SafeModePassWord 'Pa$$w0rd' -FirstDC -LocalCredential $localcredential
 
@@ -58,5 +60,3 @@ Set-PLVMComputerName -VmName PLServer -NewComputerName PLServer -LocalCredential
 
 Set-PLVMstaticIP -VmName PLDC01 -NewIpAddress 10.1.0.5 -NewSubnetPrefix 24 -NewGateway 10.1.0.1 -DNSServer 8.8.8.8 -LocalCredential $localcredential
 ```
-
-<https://4bes.nl/2018/11/25/powerlab-quickly-create-servers-in-hyperv-using-powershell-direct>
